@@ -25,16 +25,16 @@ pub enum MeetingType {
 #[derive(Debug)]
 pub struct CourseListContext<'a> {
     id_to_meet_string: HashMap<u64, String>,
-    id_to_course: HashMap<u64, &'a Value>
+    pub id_to_course: HashMap<u64, &'a Value>
 }
 
 #[derive(Clone, Copy)]
 pub struct SectionMeeting {
-    u_start: u64,
-    u_end: u64,
+    pub u_start: u64,
+    pub u_end: u64,
     section_id: u64,
-    lecture_id: u64,
-    meeting_type: MeetingType
+    pub lecture_id: u64,
+    pub meeting_type: MeetingType
 }
 
 impl From<&str> for MeetingType {
@@ -167,7 +167,6 @@ impl<'a> CourseListContext<'a> {
 
     fn meeting_type_from_id(&self, id: u64) -> MeetingType{
         let meet_string = &*self.id_to_meet_string[&id];
-        println!("{:?}", meet_string);
         MeetingType::from(meet_string)
     }
 }
