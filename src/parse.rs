@@ -58,6 +58,13 @@ fn day_to_str(day: u64) -> &'static str{
         4 => "THR",
         5 => "FRI",
         6 => "SUN",
+        7 => "EX_SAT",
+        8 => "EX_MON",
+        9 => "EX_TUE",
+        10 => "EX_WED",
+        11 => "EX_THR",
+        12 => "EX_FRI",
+        13 => "EX_SUN",
         _ => "INVALID"
     }
 }

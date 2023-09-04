@@ -17,7 +17,8 @@ pub struct BTSolver {
 }
 
 impl BTSolver {
-    // impose the restriction that schedule is always sorted by start time
+
+    // assume schedule is always sorted by start date
     pub fn score(&self, schedule: &Vec<SectionMeeting>) -> f64 {
         // check any intersections
         
