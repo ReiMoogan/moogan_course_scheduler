@@ -82,6 +82,14 @@ impl BTSolver {
         let n_added = 0;
 
         self.search(n_added, &mut schedule_mask, &mut lecture_mask);
+        let mut valid_sections = Vec::new();
+        schedule_mask.iter().enumerate().for_each(|(idx, &chosen)| {
+            if chosen {
+                valid_sections.push(self.prefs.sections[idx]);
+            }
+        });
+
+        valid_sections
     }
 
     fn search(&self, mut n_added: usize, lecture_mask: &mut Vec<bool>, schedule_mask: &mut Vec<bool>) -> usize {
