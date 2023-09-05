@@ -70,15 +70,21 @@ fn mask_values(indices: &Vec<usize>, schedule_mask: &mut Vec<bool>, val: bool) {
 }
 
 impl BTSolver {
-    pub fn new(prefs: CoursePreferences) {
-
+    pub fn new(prefs: CoursePreferences) -> Self {
+        BTSolver {
+            prefs
+        }
     }
 
-    pub fn solve(&self) {
+    pub fn solve(&self) -> Vec<SectionMeeting> {
+        let mut schedule_mask = vec![false; self.prefs.sections.len()];
+        let mut lecture_mask = vec![false; self.prefs.lecture_ids.len()];
+        let n_added = 0;
 
+        self.search(n_added, &mut schedule_mask, &mut lecture_mask);
     }
 
-    fn search(&self, n_added: usize, lecture_mask: &mut Vec<bool>, schedule_mask: &mut Vec<bool>) -> usize {
+    fn search(&self, mut n_added: usize, lecture_mask: &mut Vec<bool>, schedule_mask: &mut Vec<bool>) -> usize {
         if n_added == self.prefs.lecture_ids.len() { return n_added; }
 
         for lecture_idx in n_added..self.prefs.lecture_ids.len() {
@@ -89,6 +95,33 @@ impl BTSolver {
             if let Some(exam_idx) = self.prefs.exam_sections[lecture_idx] {
                 schedule_mask[exam_idx] = true;
             }
+            n_added += 1;
+
+            for lab_idx in &self.prefs.lab_sections[lecture_idx] {
+                // take the lab
+                schedule_mask[*lab_idx] = true;
+                if self.score(&schedule_mask) < 0.0 { // check early instead of backtrack
+                    schedule_mask[*lab_idx] = false;
+                    continue; 
+                }
+
+                for discussion_idx in &self.prefs.discussion_sections[lecture_idx] {
+                    schedule_mask[*discussion_idx] = true;
+                    if self.score(&schedule_mask) < 0.0 { // check early 
+                        schedule_mask[*discussion_idx] = false;
+                        continue; 
+                    }
+
+                    // recurse
+                    if self.search(n_added, lecture_mask, schedule_mask) == self.prefs.lecture_ids.len() {
+                        return n_added;
+                    } 
+
+                    schedule_mask[*discussion_idx] = false;
+                }
+
+                schedule_mask[*lab_idx] = false;
+            }
 
             // or don't add it
             lecture_mask[lecture_idx] = false;
@@ -96,6 +129,12 @@ impl BTSolver {
             if let Some(exam_idx) = self.prefs.exam_sections[lecture_idx] {
                 schedule_mask[exam_idx] = false;
             }
+            n_added -= 1;
+
+            // recurse, missing one course
+            if self.search(n_added, lecture_mask, schedule_mask) == self.prefs.lecture_ids.len() {
+                return n_added;
+            } 
         }
 
         return n_added;
