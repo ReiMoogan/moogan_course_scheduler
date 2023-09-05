@@ -1,4 +1,4 @@
-use std::{fs, str, collections::HashMap, fmt::{Debug, self}, any::type_name};
+use std::{fs, str, collections::HashMap, fmt::Debug, any::type_name};
 
 use serde_json::Value;
 
@@ -32,7 +32,7 @@ pub struct CourseListContext<'a> {
 pub struct SectionMeeting {
     pub u_start: u64,
     pub u_end: u64,
-    section_id: u64,
+    pub section_id: u64,
     pub lecture_id: u64,
     pub meeting_type: MeetingType
 }
@@ -179,11 +179,5 @@ fn parse_test() {
     let course_ctx = CourseListContext::new(&v);
     let meetings = course_ctx.meetings_from_lectures(&want);
     meetings.iter().for_each(|v| { println!("{:?}", v) });
-    // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
-}
-
-#[test]
-fn modulo_test() {
-    println!("{:?}", (-1)%12);
     // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
 }

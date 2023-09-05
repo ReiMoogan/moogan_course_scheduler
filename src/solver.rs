@@ -1,6 +1,5 @@
-use std::{collections::{HashMap, HashSet}, hash::Hash, fs, cmp::max};
+use std::{collections::HashMap, cmp::max, fs};
 use log::warn;
-use serde_json::Value;
 
 use crate::parse::{CourseListContext, SectionMeeting, MeetingType};
 
@@ -21,7 +20,6 @@ pub struct CoursePreferences {
 
 pub struct BTSolver {
     prefs: CoursePreferences,
-
 }
 
 impl CoursePreferences {
@@ -81,7 +79,7 @@ impl BTSolver {
         let mut lecture_mask = vec![false; self.prefs.lecture_ids.len()];
         let n_added = 0;
 
-        self.search(n_added, &mut schedule_mask, &mut lecture_mask);
+        self.search(n_added, &mut lecture_mask, &mut schedule_mask);
         let mut valid_sections = Vec::new();
         schedule_mask.iter().enumerate().for_each(|(idx, &chosen)| {
             if chosen {
@@ -149,7 +147,8 @@ impl BTSolver {
     }
 
     // assume schedule is always sorted by start date
-    // assume at least one lecture session for all desired lectures
+    // the purpose of returning a float is to allow incentives for user preferences
+    // probably will add a feature like this if this scheduler actually gets used
     fn score(&self, schedule_mask: &Vec<bool>) -> f64 {
         let mut ending = 0; // pretty sure no classes start sunday 12am
         for section_idx in 0..schedule_mask.len() {
@@ -162,57 +161,22 @@ impl BTSolver {
 
         1.0
     }
-
-    // fn score(&self, schedule: &Vec<SectionMeeting>) -> f64 {
-    //     // check any intersections and count lectures and discussions
-    //     let mut ending = 0; // pretty sure no classes are on sunday 12am
-    //     let mut seen_lab = HashSet::new();
-    //     let mut seen_discussion = HashSet::new();
-    
-    //     for i in 0..schedule.len() {
-    //         if schedule[i].u_start <= ending {
-    //             return -1.0; // a "soft rejection" preferred in GASolver. penalize by overlap in time
-    //         }
-
-    //         let lecture_id = schedule[i].lecture_id;
-
-    //         let is_lab = matches!(schedule[i].meeting_type, MeetingType::Lab);
-    //         if is_lab && seen_lab.contains(&lecture_id) { return -1.0; } // makes no sense to have 2 lab sections
-
-    //         let is_discussion = matches!(schedule[i].meeting_type, MeetingType::Discussion);
-    //         if is_discussion && seen_discussion.contains(&lecture_id) { return -1.0; } // makes no sense to have 2 discussion sections
-
-    //         if is_lab { seen_lab.insert(lecture_id); }
-    //         else if is_discussion { seen_discussion.insert(lecture_id); }
-
-    //         ending = schedule[i].u_end;
-    //     }
- 
-    //     // check all the lectures have disc/lab if they require them
-    //     if self.prefs.lecture_ids.iter().all(|lecture_id| {
-    //         let req_discussion = self.prefs.required_discussion[lecture_id];
-    //         let req_lab = self.prefs.required_lab[lecture_id];
-    //         (!req_discussion || (req_discussion && seen_discussion.contains(lecture_id))) &&
-    //         (!req_lab || (req_lab && seen_discussion.contains(lecture_id)))
-    //     }) {
-    //         return -1.0; // GASolver "soft rejection" penalizes by the number of missing sections
-    //     }
-
-    //     1.0 // again, "encouraging approval" preferred in GA solver, incentivizing "good" schedules like no late classes
-    // }
 }
 
 #[test]
 fn score_1_class() {
     let res = fs::read("data/mess.json");
-    let gql_response: Value = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
+    let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
     let want = vec![2023330086];
     let ctx = CourseListContext::new(&gql_response);
     let prefs = CoursePreferences::new(want, ctx);
-    println!("{:?}", prefs)
+    let solver = BTSolver::new(prefs);
+    let res = solver.solve();
+    res.iter().for_each(|v| { println!("{:?}", v) });
     // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
 }
 
+#[test]
 fn score_2_class_conflict() {
     println!("{:?}", (-1)%12);
     // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
