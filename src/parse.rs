@@ -175,7 +175,7 @@ impl<'a> CourseListContext<'a> {
 fn parse_test() {
     let res = fs::read("data/mess.json");
     let v: Value = serde_json::from_str(str::from_utf8(&res.unwrap()).unwrap()).unwrap();
-    let want = vec![2023337427];
+    let want = vec![2023330086];
     let course_ctx = CourseListContext::new(&v);
     let meetings = course_ctx.meetings_from_lectures(&want);
     meetings.iter().for_each(|v| { println!("{:?}", v) });

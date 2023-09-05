@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, HashSet}, hash::Hash, fs};
+use std::{collections::{HashMap, HashSet}, hash::Hash, fs, cmp::max};
 use log::warn;
 use serde_json::Value;
 
@@ -82,15 +82,20 @@ impl BTSolver {
         if n_added == self.prefs.lecture_ids.len() { return n_added; }
 
         for lecture_idx in n_added..self.prefs.lecture_ids.len() {
-            // add the class
+            // add the class and add all of its lecture sections
             lecture_mask[lecture_idx] = true;
-            // add all of its lecture sections
             mask_values(&self.prefs.lecture_sections[lecture_idx], schedule_mask, true);
-            
+            // exam section
+            if let Some(exam_idx) = self.prefs.exam_sections[lecture_idx] {
+                schedule_mask[exam_idx] = true;
+            }
 
             // or don't add it
             lecture_mask[lecture_idx] = false;
             mask_values(&self.prefs.lecture_sections[lecture_idx], schedule_mask, false);
+            if let Some(exam_idx) = self.prefs.exam_sections[lecture_idx] {
+                schedule_mask[exam_idx] = false;
+            }
         }
 
         return n_added;
@@ -98,6 +103,19 @@ impl BTSolver {
 
     // assume schedule is always sorted by start date
     // assume at least one lecture session for all desired lectures
+    fn score(&self, schedule_mask: &Vec<bool>) -> f64 {
+        let mut ending = 0; // pretty sure no classes start sunday 12am
+        for section_idx in 0..schedule_mask.len() {
+            if !schedule_mask[section_idx] { continue; }
+            let section = self.prefs.sections[section_idx];
+            if section.u_start <= ending { return -1.0; }
+
+            ending = max(ending, section.u_end);
+        }
+
+        1.0
+    }
+
     // fn score(&self, schedule: &Vec<SectionMeeting>) -> f64 {
     //     // check any intersections and count lectures and discussions
     //     let mut ending = 0; // pretty sure no classes are on sunday 12am
@@ -141,7 +159,7 @@ impl BTSolver {
 fn score_1_class() {
     let res = fs::read("data/mess.json");
     let gql_response: Value = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
-    let want = vec![2023337427];
+    let want = vec![2023330086];
     let ctx = CourseListContext::new(&gql_response);
     let prefs = CoursePreferences::new(want, ctx);
     println!("{:?}", prefs)
