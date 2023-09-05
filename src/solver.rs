@@ -21,6 +21,7 @@ pub struct CoursePreferences {
 
 pub struct BTSolver {
     prefs: CoursePreferences,
+
 }
 
 impl CoursePreferences {
@@ -62,6 +63,12 @@ impl CoursePreferences {
     }
 }
 
+fn mask_values(indices: &Vec<usize>, schedule_mask: &mut Vec<bool>, val: bool) {
+    indices.iter().for_each(|&idx| {
+        schedule_mask[idx] = val;
+    });
+}
+
 impl BTSolver {
     pub fn new(prefs: CoursePreferences) {
 
@@ -71,8 +78,22 @@ impl BTSolver {
 
     }
 
-    fn backtrack(&self, schedule_mask: &Vec<bool>) {
-        
+    fn search(&self, n_added: usize, lecture_mask: &mut Vec<bool>, schedule_mask: &mut Vec<bool>) -> usize {
+        if n_added == self.prefs.lecture_ids.len() { return n_added; }
+
+        for lecture_idx in n_added..self.prefs.lecture_ids.len() {
+            // add the class
+            lecture_mask[lecture_idx] = true;
+            // add all of its lecture sections
+            mask_values(&self.prefs.lecture_sections[lecture_idx], schedule_mask, true);
+            
+
+            // or don't add it
+            lecture_mask[lecture_idx] = false;
+            mask_values(&self.prefs.lecture_sections[lecture_idx], schedule_mask, false);
+        }
+
+        return n_added;
     }
 
     // assume schedule is always sorted by start date
