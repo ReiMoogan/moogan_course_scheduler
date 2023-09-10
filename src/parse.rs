@@ -1,4 +1,4 @@
-use std::{fs, str, collections::HashMap, fmt::Debug, any::type_name};
+use std::{str, collections::HashMap, fmt::Debug};
 
 use serde_json::Value;
 
@@ -28,7 +28,7 @@ pub struct CourseListContext<'a> {
     pub id_to_course: HashMap<u64, &'a Value>
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct SectionMeeting {
     pub u_start: u64,
     pub u_end: u64,
@@ -78,18 +78,18 @@ fn hour_to_murican(u_time: u64) -> String {
     return format!("{}:{:0>2} {}", hour, minute, am_or_pm);
 }
 
-// impl Debug for SectionMeeting {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         let start_day = self.u_start / (24 * 3600);
+impl Debug for SectionMeeting {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let start_day = self.u_start / (24 * 3600);
 
-//         let end_day = self.u_end / (24 * 3600);
+        let end_day = self.u_end / (24 * 3600);
 
-//         write!(f, "{} {{ start: {} {}, end: {} {}, type: {:?} }}", self.section_name, 
-//             day_to_str(start_day), hour_to_murican(self.u_start),
-//             day_to_str(end_day), hour_to_murican(self.u_end), 
-//             self.meeting_type)
-//     }
-// }
+        write!(f, "{} {{ start: {} {}, end: {} {}, type: {:?} }}", self.section_name, 
+            day_to_str(start_day), hour_to_murican(self.u_start),
+            day_to_str(end_day), hour_to_murican(self.u_end), 
+            self.meeting_type)
+    }
+}
 
 
 impl<'a> CourseListContext<'a> {
@@ -174,13 +174,20 @@ impl<'a> CourseListContext<'a> {
     }
 }
 
-#[test]
-fn parse_test() {
-    let res = fs::read("data/mess.json");
-    let v: Value = serde_json::from_str(str::from_utf8(&res.unwrap()).unwrap()).unwrap();
-    let want = vec![2023337427, 2023337795,  2023336415, 2023337412];
-    let course_ctx = CourseListContext::new(&v);
-    let meetings = course_ctx.meetings_from_lectures(&want);
-    meetings.iter().for_each(|v| { println!("{:?}", v) });
-    // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
+#[cfg(test)]
+mod tests {
+    use std::fs;
+    use serde_json::Value;
+    use crate::parse::CourseListContext;
+    
+    #[test]
+    fn parse_test() {
+        let res = fs::read("data/mess.json");
+        let v: Value = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
+        let want = vec![2023337427, 2023337795,  2023336415, 2023337412];
+        let course_ctx = CourseListContext::new(&v);
+        let meetings = course_ctx.meetings_from_lectures(&want);
+        meetings.iter().for_each(|v| { println!("{:?}", v) });
+        // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
+    }
 }

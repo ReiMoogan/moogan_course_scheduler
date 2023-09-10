@@ -1,4 +1,4 @@
-use std::{collections::HashMap, cmp::max, fs};
+use std::collections::HashMap;
 use log::warn;
 
 use crate::parse::{CourseListContext, SectionMeeting, MeetingType};
@@ -180,59 +180,66 @@ impl BTSolver {
     }
 }
 
-#[test]
-fn score_1_class() {
-    let res = fs::read("data/mess.json");
-    let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
-    let want = vec![2023337427];
-    let ctx = CourseListContext::new(&gql_response);
-    let prefs = CoursePreferences::new(want, ctx);
-    let solver = BTSolver::new(prefs);
-    let res = solver.solve();
-    res.iter().for_each(|v| { println!("{:?}", v) });
-    // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
-}
+#[cfg(test)]
+mod tests {
+    use std::fs;
+    use crate::parse::CourseListContext;
+    use crate::solver::{BTSolver, CoursePreferences};
+    
+    #[test]
+    fn score_1_class() {
+        let res = fs::read("data/mess.json");
+        let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
+        let want = vec![2023337427];
+        let ctx = CourseListContext::new(&gql_response);
+        let prefs = CoursePreferences::new(want, ctx);
+        let solver = BTSolver::new(prefs);
+        let res = solver.solve();
+        res.iter().for_each(|v| { println!("{:?}", v) });
+        // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
+    }
 
-#[test]
-fn score_my_schedule() {
-    let res = fs::read("data/mess.json");
-    let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
-    let want = vec![2023337427];
-    let ctx = CourseListContext::new(&gql_response);
-    let prefs = CoursePreferences::new(want, ctx);
-    let solver = BTSolver::new(prefs);
-    let res = solver.solve();
-    res.iter().for_each(|v| { println!("{:?}", v) });
-    // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
-}
+    #[test]
+    fn score_my_schedule() {
+        let res = fs::read("data/mess.json");
+        let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
+        let want = vec![2023337427];
+        let ctx = CourseListContext::new(&gql_response);
+        let prefs = CoursePreferences::new(want, ctx);
+        let solver = BTSolver::new(prefs);
+        let res = solver.solve();
+        res.iter().for_each(|v| { println!("{:?}", v) });
+        // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
+    }
 
-#[test]
-fn my_schedule_test() {
-    let res = fs::read("data/mess.json");
-    let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
-    let want = vec![2023337427, 2023337795,  2023336415, 2023337412];
-    let ctx = CourseListContext::new(&gql_response);
-    let prefs = CoursePreferences::new(want, ctx);
-    // prefs.sections.iter().for_each(|a| { println!("{:?}", a) });
-    let solver = BTSolver::new(prefs);
-    let res = solver.solve();
-    res.iter().for_each(|v| { 
-        v.iter().for_each(|a| { println!("{:?}", a) });
-        println!();
-    });
-    // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
-}
+    #[test]
+    fn my_schedule_test() {
+        let res = fs::read("data/mess.json");
+        let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
+        let want = vec![2023337427, 2023337795,  2023336415, 2023337412];
+        let ctx = CourseListContext::new(&gql_response);
+        let prefs = CoursePreferences::new(want, ctx);
+        // prefs.sections.iter().for_each(|a| { println!("{:?}", a) });
+        let solver = BTSolver::new(prefs);
+        let res = solver.solve();
+        res.iter().for_each(|v| { 
+            v.iter().for_each(|a| { println!("{:?}", a) });
+            println!();
+        });
+        // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
+    }
 
-// #[test]
-// fn score_ess001_fail() {
-//     let res = fs::read("data/mess.json");
-//     let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
-//     let want = vec![2023333322];
-//     todo!("fix this");
-//     let ctx = CourseListContext::new(&gql_response);
-//     let prefs = CoursePreferences::new(want, ctx);
-//     let solver = BTSolver::new(prefs);
-//     let res = solver.solve();
-//     res.iter().for_each(|v| { println!("{:?}", v) });
-//     // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
-// }
+    // #[test]
+    // fn score_ess001_fail() {
+    //     let res = fs::read("data/mess.json");
+    //     let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
+    //     let want = vec![2023333322];
+    //     todo!("fix this");
+    //     let ctx = CourseListContext::new(&gql_response);
+    //     let prefs = CoursePreferences::new(want, ctx);
+    //     let solver = BTSolver::new(prefs);
+    //     let res = solver.solve();
+    //     res.iter().for_each(|v| { println!("{:?}", v) });
+    //     // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
+    // }
+}
