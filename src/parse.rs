@@ -28,12 +28,13 @@ pub struct CourseListContext<'a> {
     pub id_to_course: HashMap<u64, &'a Value>
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct SectionMeeting {
     pub u_start: u64,
     pub u_end: u64,
     pub section_id: u64,
     pub lecture_id: u64,
+    pub section_name: String,
     pub meeting_type: MeetingType
 }
 
@@ -77,18 +78,18 @@ fn hour_to_murican(u_time: u64) -> String {
     return format!("{}:{:0>2} {}", hour, minute, am_or_pm);
 }
 
-impl Debug for SectionMeeting {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let start_day = self.u_start / (24 * 3600);
+// impl Debug for SectionMeeting {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         let start_day = self.u_start / (24 * 3600);
 
-        let end_day = self.u_end / (24 * 3600);
+//         let end_day = self.u_end / (24 * 3600);
 
-        write!(f, "{} {{ start: {} {}, end: {} {}, type: {:?} }}", type_name::<Self>(), 
-            day_to_str(start_day), hour_to_murican(self.u_start),
-            day_to_str(end_day), hour_to_murican(self.u_end), 
-            self.meeting_type)
-    }
-}
+//         write!(f, "{} {{ start: {} {}, end: {} {}, type: {:?} }}", self.section_name, 
+//             day_to_str(start_day), hour_to_murican(self.u_start),
+//             day_to_str(end_day), hour_to_murican(self.u_end), 
+//             self.meeting_type)
+//     }
+// }
 
 
 impl<'a> CourseListContext<'a> {
@@ -154,12 +155,14 @@ impl<'a> CourseListContext<'a> {
                     let mut u_end = i * 24 * 3600 + (end_digits / 100) * 3600 + (end_digits % 100)*60;
 
                     // make final exams "next week"
-                    if (matches!(meeting_type, MeetingType::Exam)) {
+                    if matches!(meeting_type, MeetingType::Exam) {
                         u_start += 7 * 24 * 3600;
                         u_end += 7 * 24 * 3600;
                     }
 
-                    meetings.push(SectionMeeting { u_start: u_start, u_end: u_end, section_id: section_id, lecture_id: lecture_id, meeting_type: meeting_type })
+                    meetings.push(SectionMeeting { u_start: u_start, u_end: u_end, 
+                        section_id: section_id, lecture_id: lecture_id, meeting_type: meeting_type, 
+                        section_name: self.id_to_course.get(&section_id).unwrap()["courseNumber"].to_string() })
                 }
             }
         });
@@ -175,7 +178,7 @@ impl<'a> CourseListContext<'a> {
 fn parse_test() {
     let res = fs::read("data/mess.json");
     let v: Value = serde_json::from_str(str::from_utf8(&res.unwrap()).unwrap()).unwrap();
-    let want = vec![2023330086];
+    let want = vec![2023337427, 2023337795,  2023336415, 2023337412];
     let course_ctx = CourseListContext::new(&v);
     let meetings = course_ctx.meetings_from_lectures(&want);
     meetings.iter().for_each(|v| { println!("{:?}", v) });
