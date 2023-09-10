@@ -73,7 +73,7 @@ fn day_to_str(day: u64) -> &'static str{
 fn hour_to_murican(u_time: u64) -> String {
     let hour = u_time % (24 * 3600) / 3600;
     let am_or_pm = if hour >= 12 { "PM" } else { "AM" };
-    let hour = if hour == 0 { 12 } else { (hour as i64 - 12).rem_euclid(12) };
+    let hour = if hour == 0 { 12 } else { hour };
     let minute =  u_time % (24 * 3600) % 3600 / 60;
     return format!("{}:{:0>2} {}", hour, minute, am_or_pm);
 }
