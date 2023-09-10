@@ -229,17 +229,46 @@ mod tests {
         // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
     }
 
-    // #[test]
-    // fn score_ess001_fail() {
-    //     let res = fs::read("data/mess.json");
-    //     let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
-    //     let want = vec![2023333322];
-    //     todo!("fix this");
-    //     let ctx = CourseListContext::new(&gql_response);
-    //     let prefs = CoursePreferences::new(want, ctx);
-    //     let solver = BTSolver::new(prefs);
-    //     let res = solver.solve();
-    //     res.iter().for_each(|v| { println!("{:?}", v) });
-    //     // println!("{:?}", v["data"]["classes"]["nodes"].as_array().unwrap().len())
-    // }
+    #[test]
+    fn score_ess001_fail() {
+        let res = fs::read("data/mess.json");
+        let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
+        let want = vec![2023333322];
+        // let want = vec![2023337427, 2023337795,  2023336415, 2023337412, 2023333322];
+        let ctx = CourseListContext::new(&gql_response);
+        let prefs = CoursePreferences::new(want, ctx);
+        let solver = BTSolver::new(prefs);
+        let res = solver.solve();
+        res.iter().for_each(|v| { println!("{:?}", v) });
+    }
+
+    #[test]
+    fn score_chem2_pass() {
+        let res = fs::read("data/mess.json");
+        let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
+        let want = vec![2023337427, 2023337795,  2023336415, 2023337412, 2023330086];
+        let ctx = CourseListContext::new(&gql_response);
+        let prefs = CoursePreferences::new(want, ctx);
+        let solver = BTSolver::new(prefs);
+        let res = solver.solve();
+        res.iter().for_each(|v| { 
+            v.iter().for_each(|a| { println!("{:?}", a) });
+            println!();
+        });
+    }
+
+    #[test]
+    fn score_phys2_pass() {
+        let res = fs::read("data/mess.json");
+        let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
+        let want = vec![2023337427, 2023337795,  2023336415, 2023337412, 2023335669];
+        let ctx = CourseListContext::new(&gql_response);
+        let prefs = CoursePreferences::new(want, ctx);
+        let solver = BTSolver::new(prefs);
+        let res = solver.solve();
+        res.iter().for_each(|v| { 
+            v.iter().for_each(|a| { println!("{:?}", a) });
+            println!();
+        });
+    }
 }
