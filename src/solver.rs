@@ -1,7 +1,16 @@
 use std::collections::HashMap;
 use log::warn;
+use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::parse::{CourseListContext, SectionMeeting, MeetingType};
+use crate::utils::SolveError;
+
+#[wasm_bindgen]
+extern {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+    fn alert(s: &str);
+}
 
 #[derive(Debug)]
 pub struct CoursePreferences {
@@ -25,7 +34,7 @@ pub struct BTSolver {
 }
 
 impl CoursePreferences {
-    pub fn new(lecture_ids: Vec<u64>, course_ctx: CourseListContext) -> Self {
+    pub fn new(lecture_ids: Vec<u64>, course_ctx: CourseListContext) -> Result<Self, SolveError> {
         let mut lab_sections = vec![Vec::new(); lecture_ids.len()];
         let mut discussion_sections = vec![Vec::new(); lecture_ids.len()];
         let mut lecture_sections = vec![Vec::new(); lecture_ids.len()];
@@ -36,7 +45,7 @@ impl CoursePreferences {
             lecture_id_to_idx.insert(*k, i);
         });
 
-        let mut sections = course_ctx.meetings_from_lectures(&lecture_ids);
+        let mut sections = course_ctx.meetings_from_lectures(&lecture_ids)?;
         sections.sort_by_key(|section| section.u_start);
 
         sections.iter().enumerate().for_each(|(idx, section)| {
@@ -63,7 +72,7 @@ impl CoursePreferences {
             }
         }
 
-        Self {
+        Ok(Self {
             lecture_ids,
             sections,
 
@@ -73,7 +82,7 @@ impl CoursePreferences {
             sentinel_idx,
 
             exam_sections
-        }
+        })
     }
 }
 
@@ -191,8 +200,8 @@ mod tests {
         let res = fs::read("data/mess.json");
         let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
         let want = vec![2023337427];
-        let ctx = CourseListContext::new(&gql_response);
-        let prefs = CoursePreferences::new(want, ctx);
+        let ctx = CourseListContext::new(&gql_response).unwrap();
+        let prefs = CoursePreferences::new(want, ctx).unwrap();
         let solver = BTSolver::new(prefs);
         let res = solver.solve();
         res.iter().for_each(|v| { println!("{:?}", v) });
@@ -204,8 +213,8 @@ mod tests {
         let res = fs::read("data/mess.json");
         let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
         let want = vec![2023337427];
-        let ctx = CourseListContext::new(&gql_response);
-        let prefs = CoursePreferences::new(want, ctx);
+        let ctx = CourseListContext::new(&gql_response).unwrap();
+        let prefs = CoursePreferences::new(want, ctx).unwrap();
         let solver = BTSolver::new(prefs);
         let res = solver.solve();
         res.iter().for_each(|v| { println!("{:?}", v) });
@@ -217,8 +226,8 @@ mod tests {
         let res = fs::read("data/mess.json");
         let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
         let want = vec![2023337427, 2023337795,  2023336415, 2023337412];
-        let ctx = CourseListContext::new(&gql_response);
-        let prefs = CoursePreferences::new(want, ctx);
+        let ctx = CourseListContext::new(&gql_response).unwrap();
+        let prefs = CoursePreferences::new(want, ctx).unwrap();
         // prefs.sections.iter().for_each(|a| { println!("{:?}", a) });
         let solver = BTSolver::new(prefs);
         let res = solver.solve();
@@ -235,8 +244,8 @@ mod tests {
         let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
         let want = vec![2023333322];
         // let want = vec![2023337427, 2023337795,  2023336415, 2023337412, 2023333322];
-        let ctx = CourseListContext::new(&gql_response);
-        let prefs = CoursePreferences::new(want, ctx);
+        let ctx = CourseListContext::new(&gql_response).unwrap();
+        let prefs = CoursePreferences::new(want, ctx).unwrap();
         let solver = BTSolver::new(prefs);
         let res = solver.solve();
         res.iter().for_each(|v| { println!("{:?}", v) });
@@ -247,8 +256,8 @@ mod tests {
         let res = fs::read("data/mess.json");
         let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
         let want = vec![2023337427, 2023337795,  2023336415, 2023337412, 2023330086];
-        let ctx = CourseListContext::new(&gql_response);
-        let prefs = CoursePreferences::new(want, ctx);
+        let ctx = CourseListContext::new(&gql_response).unwrap();
+        let prefs = CoursePreferences::new(want, ctx).unwrap();
         let solver = BTSolver::new(prefs);
         let res = solver.solve();
         res.iter().for_each(|v| { 
@@ -262,8 +271,8 @@ mod tests {
         let res = fs::read("data/mess.json");
         let gql_response = serde_json::from_str(std::str::from_utf8(&res.unwrap()).unwrap()).unwrap();
         let want = vec![2023337427, 2023337795,  2023336415, 2023337412, 2023335669];
-        let ctx = CourseListContext::new(&gql_response);
-        let prefs = CoursePreferences::new(want, ctx);
+        let ctx = CourseListContext::new(&gql_response).unwrap();
+        let prefs = CoursePreferences::new(want, ctx).unwrap();
         let solver = BTSolver::new(prefs);
         let res = solver.solve();
         res.iter().for_each(|v| { 
